@@ -7,7 +7,7 @@ class SoundAnalyzer:
     '''
     音を解析するクラス
     '''
-    def __init__(self, rate, channel=1, chunk=2048):
+    def __init__(self, rate, f_area_list=[], channel=1, chunk=2048):
         self.rate = rate
         self.chunk = chunk
         self.sleep_time = 0.01
@@ -19,7 +19,12 @@ class SoundAnalyzer:
         self.freq_list = [i * self.rate / self.chunk for i in range(self.freq_length)]
         # グラフ描画準備
         _, (self.ax_l, self.ax_r) = plt.subplots(ncols=2, figsize=(10, 4))
-    
+
+        # 検出周波数帯
+        self.f_index_list = []
+        for f_area in f_area_list:
+            self.f_index_list.append(np.where((np.array(self.freq_list) > f_area[0]) & (np.array(self.freq_list) < f_area[1])))
+
     def dft(self, f):
         '''
         離散フーリエ変換
@@ -63,6 +68,13 @@ class SoundAnalyzer:
                 self.ax_r.set_ylabel('Power[dB]')
                 self.ax_r.set_ylim(-50, 100)
 
+                # 検出範囲を塗りつぶす
+                for f_index in self.f_index_list:
+                    area_index = np.array(self.freq_list)[f_index]
+                    self.ax_r.axvspan(area_index[0], area_index[-1], alpha=0.5, color="#ffcdd2")
+                    if log_data[f_index].max() > 70:
+                        print("detect!")
+
                 # matplotlibのリアルタイム描画
                 plt.draw()
                 plt.pause(self.sleep_time)
@@ -78,5 +90,5 @@ class SoundAnalyzer:
             plt.close()
 
 if __name__ == "__main__":
-    sa = SoundAnalyzer(44100)
+    sa = SoundAnalyzer(44100, [(2750, 2950), (8900, 9100)])
     sa.run()
