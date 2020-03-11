@@ -49,16 +49,19 @@ class SoundAnalyzer:
                 sound_data = np.frombuffer(data, dtype='int16')
                 self.ax_l.plot(range(self.chunk), sound_data)
                 self.ax_l.set_xlabel('Time')
+                self.ax_l.set_ylabel('Amplitude')
                 self.ax_l.set_ylim([-20000, 20000])
 
                 # 周波数領域での音データ
                 fft_data = self.dft(sound_data)
                 amp_data = np.abs(fft_data/self.freq_length)
+                log_data = 20*np.log10(amp_data)
                 # ナイキストの定理より、freq_lengthより大きい範囲は不要
                 # 0はDC成分なので非表示とする
-                self.ax_r.plot(self.freq_list[1:self.freq_length], amp_data[1:self.freq_length])
+                self.ax_r.plot(self.freq_list[1:self.freq_length], log_data[1:self.freq_length])
                 self.ax_r.set_xlabel('Frequency[Hz]')
-                self.ax_r.set_ylim(-5, 5000)
+                self.ax_r.set_ylabel('Power[dB]')
+                self.ax_r.set_ylim(-50, 100)
 
                 # matplotlibのリアルタイム描画
                 plt.draw()
@@ -67,7 +70,7 @@ class SoundAnalyzer:
                 self.ax_l.cla()
                 self.ax_r.cla()
         except KeyboardInterrupt:
-            print('\n*** end ***')
+            print('\n***  end  ***')
             # お片付け
             self.stream.stop_stream()
             self.stream.close()
