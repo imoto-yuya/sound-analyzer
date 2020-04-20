@@ -1,5 +1,6 @@
 import cmath
 import pyaudio
+import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,7 +19,7 @@ class SoundAnalyzer:
         self.freq_length = int(self.chunk / 2)
         self.freq_list = [i * self.rate / self.chunk for i in range(self.freq_length)]
         # グラフ描画準備
-        _, (self.ax_l, self.ax_r) = plt.subplots(ncols=2, figsize=(10, 4))
+        self.fig, (self.ax_l, self.ax_r) = plt.subplots(ncols=2, figsize=(10, 4))
 
         # 検出周波数帯
         self.f_index_list = []
@@ -74,6 +75,9 @@ class SoundAnalyzer:
                     self.ax_r.axvspan(area_index[0], area_index[-1], alpha=0.5, color="#ffcdd2")
                     if log_data[f_index].max() > 70:
                         print("detect!")
+                        now = datetime.datetime.now()
+                        filename = './' + now.strftime('%Y%m%d_%H%M%S') + '.png'
+                        self.fig.savefig(filename)
 
                 # matplotlibのリアルタイム描画
                 plt.draw()
